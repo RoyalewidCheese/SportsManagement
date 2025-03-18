@@ -16,6 +16,12 @@ const CouncilDashboard = () => {
   const [recentApplications, setRecentApplications] = useState([]);
   const [upcomingTournaments, setUpcomingTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Function to handle sidebar state
+  const handleSidebarToggle = (isOpen) => {
+    setSidebarOpen(isOpen);
+  };
 
   // Static data for the application activity chart
   const activityData = [
@@ -175,11 +181,18 @@ const CouncilDashboard = () => {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <CouncilNavbar />
+      <CouncilNavbar onToggle={handleSidebarToggle} />
 
-      {/* Main Content */}
-      <div className="flex-1 p-8 ml-0 md:ml-20 transition-all duration-300 bg-gray-50 min-h-screen">
+      {/* Main Content - Adjusted margin & transition classes */}
+      <div 
+        className={`flex-1 p-8 transition-all duration-300 bg-gray-50 min-h-screen ${
+          sidebarOpen ? 'ml-72' : 'ml-0 md:ml-64'
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
+          {/* Mobile Content Spacer - Prevents content hiding under mobile menu button */}
+          <div className="h-14 md:h-0 block md:hidden"></div>
+          
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Council Dashboard</h1>
@@ -332,7 +345,7 @@ const CouncilDashboard = () => {
                             : "Unknown date"}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             app.status === "Approved" ? "bg-green-100 text-green-800" : 
                             app.status === "Rejected" ? "bg-red-100 text-red-800" : 
                             "bg-yellow-100 text-yellow-800"

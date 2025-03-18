@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Trophy, Clipboard, Award, LogOut, ChevronRight } from "lucide-react";
 
 const CouncilNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   const location = useLocation();
+
+  // Track scroll position to add visual effects based on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -15,10 +25,10 @@ const CouncilNavbar = () => {
   };
 
   const navItems = [
-    { path: "/council/dashboard", name: "Dashboard", icon: <Home size={20} /> },
-    { path: "/manage/tournaments", name: "Tournaments", icon: <Trophy size={20} /> },
-    { path: "/manage/applications", name: "Applications", icon: <Clipboard size={20} /> },
-    { path: "/manage/winners", name: "Winners", icon: <Award size={20} /> },
+    { path: "/council/dashboard", name: "Dashboard" },
+    { path: "/manage/tournaments", name: "Tournaments" },
+    { path: "/manage/applications", name: "Applications" },
+    { path: "/manage/winners", name: "Winners" },
   ];
 
   return (
@@ -26,66 +36,80 @@ const CouncilNavbar = () => {
       {/* Mobile Toggle Button */}
       <button 
         onClick={toggleSidebar} 
-        className="fixed top-4 left-4 z-50 p-2 rounded-full bg-purple-600 text-white shadow-lg md:hidden"
+        className="fixed top-4 left-4 z-50 px-4 py-2 rounded-lg bg-indigo-800 text-white font-medium md:hidden transition-all duration-200 hover:bg-indigo-700"
       >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
+        {isOpen ? "Close Menu" : "Menu"}
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar Navigation */}
       <div 
-        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-purple-800 to-purple-600 text-white shadow-2xl z-40 transition-all duration-300 ease-in-out ${
-          isOpen ? "w-64" : "w-0 md:w-20"
+        className={`fixed top-0 left-0 h-full bg-gradient-to-br from-indigo-900 via-indigo-800 to-violet-900 text-white shadow-xl z-40 transition-all duration-300 ease-in-out ${
+          isOpen ? "w-72" : "w-0 md:w-64"
         } overflow-hidden`}
       >
         {/* Logo / Header */}
-        <div className="p-6 flex items-center justify-center">
-          <div className={`flex items-center space-x-3 ${!isOpen && "md:hidden"}`}>
-            <span className="text-3xl font-bold">🏆</span>
-            <h1 className={`text-xl font-bold transition-opacity duration-300 ${!isOpen && "md:opacity-0"}`}>Council</h1>
+        <div className="relative h-48 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 opacity-80"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-opacity-30 bg-black flex flex-col items-center justify-center p-6">
+            <div className="text-5xl font-bold mb-2">🏆</div>
+            <h1 className="text-2xl font-bold tracking-wider text-white">Council Login</h1>
+            <div className="w-16 h-1 bg-white mt-3 rounded-full"></div>
           </div>
-          {!isOpen && (
-            <span className="text-3xl font-bold hidden md:block">🏆</span>
-          )}
         </div>
 
-        {/* Menu Items */}
-        <div className="mt-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center py-4 px-6 transition-all duration-200 ${
-                isActive(item.path)
-                  ? "bg-purple-900 border-r-4 border-white"
-                  : "hover:bg-purple-700"
-              }`}
-            >
-              <div className="flex items-center">
-                <span>{item.icon}</span>
-                <span className={`ml-4 transition-opacity duration-300 ${!isOpen && "md:hidden"}`}>
-                  {item.name}
-                </span>
-              </div>
-              {isActive(item.path) && (
-                <ChevronRight className={`ml-auto transition-opacity duration-300 ${!isOpen && "md:hidden"}`} size={16} />
-              )}
-            </Link>
-          ))}
-        </div>
+        {/* Navigation Links */}
+        {/* Navigation Links */}
+<div className="mt-8 px-4">
+  <div className="mb-6 px-4">
+    <h2 className="text-xs uppercase tracking-wider text-indigo-300 font-semibold">Main Navigation</h2>
+  </div>
 
-      {/* Logout Button */}
-      <div className="absolute bottom-8 w-full px-6">
-        <Link
-          to="/login"
-          className={`flex items-center justify-center md:justify-start py-3 px-4 rounded-lg bg-red-500 hover:bg-red-600 transition-all duration-200 text-white font-semibold`}
-        >
-          <LogOut size={22} className="mr-2" /> {/* Logout Icon */}
-          <span className={`ml-2 transition-opacity duration-300 ${!isOpen ? "hidden" : "block"}`}>
-            Logout
-          </span>
-        </Link>
+  {navItems.map((item) => (
+    <Link
+      key={item.path}
+      to={item.path}
+      className={`block relative mb-2 rounded-lg transition-all duration-200 p-4 ${
+        isActive(item.path)
+          ? "bg-gray-800 text-white"
+          : "hover:bg-gray-700 text-gray-300"
+      }`}
+    >
+      <div className="relative z-10 flex items-center">
+        <span className="font-medium text-lg">{item.name}</span>
       </div>
 
+      {isActive(item.path) && (
+        <div className="absolute left-0 top-0 h-full w-1 bg-indigo-500"></div>
+      )}
+    </Link>
+  ))}
+</div>
+
+
+        {/* User Profile Area */}
+        <div className="absolute bottom-24 w-full px-6">
+          <div className="p-4 rounded-lg bg-indigo-800 bg-opacity-50">
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-white text-indigo-800 flex items-center justify-center font-bold text-lg">
+                AC
+              </div>
+              <div className="ml-3">
+                <p className="font-medium">Admin Council</p>
+                <p className="text-xs text-indigo-200">Tournament Manager</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="absolute bottom-8 w-full px-6">
+          <Link
+            to="/login"
+            className="block w-full text-center py-3 px-4 rounded-lg bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-200 text-white font-medium"
+          >
+           Log Out
+          </Link>
+        </div>
       </div>
 
       {/* Mobile Overlay */}

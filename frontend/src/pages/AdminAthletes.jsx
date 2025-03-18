@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Search, AlertCircle, Edit, Trash2, Filter } from "lucide-react";
 
 const AdminAthletes = () => {
   const [athletes, setAthletes] = useState([]);
@@ -7,42 +8,70 @@ const AdminAthletes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [editAthlete, setEditAthlete] = useState(null);
   const [updatedData, setUpdatedData] = useState({ name: "", email: "", admissionNumber: "" });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [institutionFilter, setInstitutionFilter] = useState("all");
+  const [institutions, setInstitutions] = useState([]);
 
   useEffect(() => {
     fetchAthletes();
   }, []);
 
-  // ✅ Fetch Athletes
+  // Extract unique institutions from athletes data
+  useEffect(() => {
+    if (athletes.length > 0) {
+      const uniqueInstitutions = [...new Set(athletes
+        .filter(athlete => athlete.instituteId?.name)
+        .map(athlete => athlete.instituteId.name))];
+      setInstitutions(uniqueInstitutions);
+    }
+  }, [athletes]);
+
+  // Fetch Athletes
   const fetchAthletes = async () => {
     try {
+      setIsLoading(true);
       const token = localStorage.getItem("authToken");
-      if (!token) return alert("Unauthorized. Please log in again.");
+      if (!token) {
+        setError("Unauthorized. Please log in again.");
+        return;
+      }
 
       const response = await axios.get("http://localhost:8000/api/athletes/admin/athletes", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("📥 Athletes fetched:", response.data);
       setAthletes(response.data);
       setFilteredAthletes(response.data);
+      setError(null);
     } catch (error) {
-      console.error("🔥 Error fetching athletes:", error.response?.data || error.message);
+      setError("Failed to load athletes. Please try again.");
+      console.error("Error fetching athletes:", error.response?.data || error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // ✅ Handle Search Function
-  const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-  
-    if (!query) {
-      setFilteredAthletes(athletes); // ✅ Reset when search is empty
-    } else {
-      const filtered = athletes.filter((athlete) => {
-        const name = athlete.name?.toLowerCase() || "";  // ✅ Prevent undefined
+  // Handle search and filter
+  useEffect(() => {
+    let result = [...athletes];
+    
+    // Apply institution filter
+    if (institutionFilter !== "all") {
+      result = result.filter(athlete => 
+        athlete.instituteId?.name === institutionFilter
+      );
+    }
+    
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((athlete) => {
+        const name = athlete.name?.toLowerCase() || "";
         const email = athlete.email?.toLowerCase() || "";
         const admissionNumber = athlete.admissionNumber?.toLowerCase() || "";
-        const institutionName = athlete.instituteId?.name?.toLowerCase() || ""; // ✅ Check if `instituteId` exists
+        const institutionName = athlete.instituteId?.name?.toLowerCase() || "";
   
         return (
           name.includes(query) ||
@@ -51,36 +80,16 @@ const AdminAthletes = () => {
           institutionName.includes(query)
         );
       });
-  
-      setFilteredAthletes(filtered);
     }
-  };
-  
-  
+    
+    setFilteredAthletes(result);
+  }, [searchQuery, athletes, institutionFilter]);
 
-  // ✅ Handle Edit Function
-  const handleEditAthlete = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) return alert("Unauthorized. Please log in again.");
-
-      await axios.put(`http://localhost:8000/api/athletes/admin/athletes/${editAthlete._id}`, updatedData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      alert("Athlete updated successfully!");
-      fetchAthletes();
-      setEditAthlete(null);
-    } catch (error) {
-      console.error("🔥 Error updating athlete:", error.response?.data || error.message);
-    }
-  };
-
-  // ✅ Handle Delete Function
+  // Handle Delete Function
   const handleDeleteAthlete = async (id) => {
     try {
       const token = localStorage.getItem("authToken");
-      if (!token) return alert("Unauthorized. Please log in again.");
+      if (!token) return setError("Unauthorized. Please log in again.");
   
       if (!window.confirm("Are you sure you want to delete this athlete?")) return;
   
@@ -88,106 +97,172 @@ const AdminAthletes = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
   
-      alert("Athlete deleted successfully!");
-      fetchAthletes(); // ✅ Refresh list after deletion
+      fetchAthletes();
     } catch (error) {
-      console.error("🔥 Error deleting athlete:", error.response?.data || error.message);
+      setError("Failed to delete athlete. Please try again.");
+      console.error("Error deleting athlete:", error.response?.data || error.message);
     }
   };
-  
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto p-6 bg-white rounded-lg">
-        <h2 className="text-3xl font-bold text-gray-800 text-center">🏆 Registered Athletes</h2>
+    <div className="p-4">
+      {/* Error display */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
+          <div className="flex items-center">
+            <AlertCircle size={20} className="text-red-500 mr-2" />
+            <p className="text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
 
-        {/* ✅ Search Bar */}
-        <div className="mt-4">
+      {/* Search and filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <div className="relative flex-1">
+          <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by Name, Email, Admission No. or Institution..."
+            placeholder="Search by name, email, admission number..."
             value={searchQuery}
-            onChange={handleSearch}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        {/* ✅ Table for Athletes */}
-        <div className="overflow-x-auto mt-6">
-          <table className="min-w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-800 text-white">
-                <th className="p-3 text-left">Profile</th>
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-left">Admission No.</th>
-                <th className="p-3 text-left">Institution</th>
-                <th className="p-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAthletes.map((athlete) => (
-                <tr key={athlete._id} className="border-t border-gray-300">
-                  <td className="p-3">
-                  <img
-                    src={athlete.image} // ✅ Uses corrected backend URL
-                    alt={athlete.name}
-                    className="w-16 h-16 object-cover rounded-full border-2 border-green-600"
-                    onError={(e) => (e.target.src = "/default-profile.png")} // ✅ Fallback for missing images
-                  />
-                  </td>
-                  <td className="p-3">{athlete.name}</td>
-                  <td className="p-3">{athlete.email}</td>
-                  <td className="p-3">{athlete.admissionNumber}</td>
-                  <td className="p-3">{athlete.instituteId?.name || "N/A"}</td>
-                  <td className="p-3">
-                    <button className="bg-red-500 text-white px-3 py-2 rounded" onClick={() => handleDeleteAthlete(athlete._id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        
+        <div className="relative">
+          <button 
+            onClick={() => setFilterOpen(!filterOpen)}
+            className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            <Filter size={18} className="mr-2" />
+            <span>Filter</span>
+          </button>
+          
+          {filterOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
+              <div className="p-4">
+                <h3 className="font-medium mb-2">Institution</h3>
+                <select
+                  value={institutionFilter}
+                  onChange={(e) => setInstitutionFilter(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="all">All Institutions</option>
+                  {institutions.map((inst, index) => (
+                    <option key={index} value={inst}>{inst}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="border-t border-gray-200 p-2 text-right">
+                <button 
+                  onClick={() => {
+                    setInstitutionFilter("all");
+                    setFilterOpen(false);
+                  }}
+                  className="px-4 py-1 text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Reset
+                </button>
+                <button 
+                  onClick={() => setFilterOpen(false)}
+                  className="px-4 py-1 text-sm bg-blue-500 text-white rounded ml-2"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ✅ Edit Modal */}
-      {editAthlete && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl font-semibold">Edit Athlete</h2>
-            <label className="block text-gray-600 mt-2">Name:</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              value={updatedData.name}
-              onChange={(e) => setUpdatedData({ ...updatedData, name: e.target.value })}
-            />
-            <label className="block text-gray-600 mt-2">Email:</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              value={updatedData.email}
-              onChange={(e) => setUpdatedData({ ...updatedData, email: e.target.value })}
-            />
-            <label className="block text-gray-600 mt-2">Admission No.:</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              value={updatedData.admissionNumber}
-              onChange={(e) => setUpdatedData({ ...updatedData, admissionNumber: e.target.value })}
-            />
-            <div className="mt-6 flex justify-between">
-              <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setEditAthlete(null)}>
-                Cancel
-              </button>
-              <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleEditAthlete}>
-                Save
-              </button>
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <>
+          {/* Athlete stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+              <h3 className="text-lg font-medium text-blue-700">Total Athletes</h3>
+              <p className="text-3xl font-bold text-blue-800">{athletes.length}</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+              <h3 className="text-lg font-medium text-green-700">Active Institutions</h3>
+              <p className="text-3xl font-bold text-green-800">{institutions.length}</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+              <h3 className="text-lg font-medium text-purple-700">Filtered Athletes</h3>
+              <p className="text-3xl font-bold text-purple-800">{filteredAthletes.length}</p>
             </div>
           </div>
-        </div>
+
+          {/* Athletes Table */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Athlete</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission No.</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Institution</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredAthletes.length > 0 ? (
+                    filteredAthletes.map((athlete) => (
+                      <tr key={athlete._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <img 
+                                className="h-10 w-10 rounded-full object-cover border border-gray-200" 
+                                src={athlete.image} 
+                                alt={athlete.name}
+                                onError={(e) => (e.target.src = "/default-profile.png")}
+                              />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{athlete.name}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{athlete.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{athlete.admissionNumber}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {athlete.instituteId?.name ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              {athlete.instituteId.name}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-500">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button 
+                            className="text-red-600 hover:text-red-900 ml-4"
+                            onClick={() => handleDeleteAthlete(athlete._id)}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                        No athletes found matching your search criteria.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -204,7 +204,7 @@ const Login = () => {
         <div className="p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-extrabold text-gray-800 flex items-center justify-center">
-              <span className="mr-2">🏆</span> Sports Council
+              <span className="mr-2">🏆</span> SportsCorp
             </h1>
             <div className="h-1 w-24 bg-gradient-to-r from-blue-600 to-green-500 mx-auto mt-2 rounded-full"></div>
             <p className="text-gray-600 mt-3">Welcome back, champion!</p>
