@@ -231,7 +231,7 @@ const AthletesDashboard = () => {
                     $25,000
                   </span>
                 </div>
-                <div className="flex items-center gap-4 mb-3 text-blue-800">
+                <div className="flex items-center gap-4 mb-3 text-black">
                   <div className="flex items-center">
                     <CalendarDays size={16} className="mr-1" /> 
                     <span>April 15, 2025</span>
@@ -255,7 +255,7 @@ const AthletesDashboard = () => {
                       <div className="w-8 h-8 rounded-full bg-indigo-300 border-2 border-indigo-600"></div>
                       <div className="w-8 h-8 rounded-full bg-purple-300 border-2 border-indigo-600"></div>
                     </div>
-                    <span className="ml-2 text-sm">+120 applied</span>
+                    <span className="ml-2 text-black text-sm">+120 applied</span>
                   </div>
                 </div>
               </div>

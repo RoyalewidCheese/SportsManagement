@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 const SponsorNavbar = () => {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [userName, setUserName] = useState("Sponsor Login");
+  const [userName, setUserName] = useState("Sponsor Portal");
   
   const isActive = (path) => {
     return location.pathname === path;
@@ -28,12 +28,6 @@ const SponsorNavbar = () => {
               {userName.charAt(0)}
             </div>
           )}
-          <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-full bg-gray-50 hover:bg-gray-100"
-          >
-            {isCollapsed ? "→" : "←"}
-          </button>
         </div>
         
         {/* Navigation Links */}

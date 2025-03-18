@@ -33,7 +33,8 @@ const AdminDashboard = () => {
     <div className="flex h-screen bg-gray-100">
       <AdminNavbar setActiveSection={setActiveSection} activeSection={activeSection} />
       
-      <div className="flex-1 overflow-auto">
+      <div className={`flex-1 overflow-auto transition-all duration-300 ${activeSection ? "ml-64" : "ml-20"}`}>
+
         <div className="p-6">
           {/* Header with title and date */}
           <div className="flex justify-between items-center mb-6">

@@ -1,18 +1,40 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import InstitutionNavbar from "../components/InstitutionNavbar";
+import SidebarNavbar from "../components/InstitutionNavbar";
+import { LineChart, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Bar, ResponsiveContainer } from 'recharts';
+import { Link } from "react-router-dom";
 
 const InstitutionDashboard = () => {
   const [stats, setStats] = useState({
     totalAthletes: 0,
     totalTournaments: 0,
-    activeParticipations: 0
+    activeParticipations: 0,
+    tournamentsWon: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentAthletes, setRecentAthletes] = useState([]);
+  
+  // Sample performance data for charts
+  const performanceData = [
+    { month: 'Jan', participants: 20, medals: 5 },
+    { month: 'Feb', participants: 25, medals: 8 },
+    { month: 'Mar', participants: 30, medals: 12 },
+    { month: 'Apr', participants: 35, medals: 10 },
+    { month: 'May', participants: 40, medals: 15 },
+    { month: 'Jun', participants: 45, medals: 18 },
+  ];
+  
+  // Sample distribution data
+  const sportDistribution = [
+    { name: 'Football', athletes: 45 },
+    { name: 'Basketball', athletes: 30 },
+    { name: 'Swimming', athletes: 25 },
+    { name: 'Tennis', athletes: 20 },
+    { name: 'Track', athletes: 35 }
+  ];
 
   useEffect(() => {
-    // Simulate fetching stats (replace with actual API calls)
+    // Simulate fetching stats
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("authToken");
@@ -26,16 +48,26 @@ const InstitutionDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         
-        // For demonstration, we'll use some mock data for other stats
+        // Enhanced stats with some mock data
         setStats({
           totalAthletes: athletesResponse.data.length,
-          totalTournaments: 12,
-          activeParticipations: 8
+          totalTournaments: 24,
+          activeParticipations: 12,
+          tournamentsWon: 8
         });
         
-        // Get most recent athletes
-        setRecentAthletes(athletesResponse.data.slice(0, 5));
+        // Sample recent athletes data
+        const sampleAthletes = athletesResponse.data.length > 0 
+          ? athletesResponse.data.slice(0, 5) 
+          : [
+              { _id: 1, name: "Alex Johnson", email: "alex@example.edu", admissionNumber: "ST21001", sport: "Swimming" },
+              { _id: 2, name: "Jamie Smith", email: "jamie@example.edu", admissionNumber: "ST21045", sport: "Basketball" },
+              { _id: 3, name: "Taylor Wilson", email: "taylor@example.edu", admissionNumber: "ST21062", sport: "Tennis" },
+              { _id: 4, name: "Morgan Lee", email: "morgan@example.edu", admissionNumber: "ST21083", sport: "Football" },
+              { _id: 5, name: "Casey Brown", email: "casey@example.edu", admissionNumber: "ST21097", sport: "Track" }
+            ];
         
+        setRecentAthletes(sampleAthletes);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -47,68 +79,84 @@ const InstitutionDashboard = () => {
   }, []);
 
   const statCards = [
-    { title: "Total Athletes", value: stats.totalAthletes, icon: "🏆", color: "from-blue-500 to-blue-600" },
-    { title: "Total Tournaments", value: stats.totalTournaments, icon: "🏅", color: "from-purple-500 to-purple-600" },
-    { title: "Active Participations", value: stats.activeParticipations, icon: "🎯", color: "from-green-500 to-green-600" }
-  ];
-
-  const quickLinks = [
-    { title: "Register New Athlete", href: "/institution/register-athlete", icon: "📝", color: "bg-blue-600" },
-    { title: "View All Athletes", href: "/institution/athletes", icon: "👥", color: "bg-purple-600" },
-    { title: "Monitor Participation", href: "/institution/monitor-participation", icon: "📊", color: "bg-green-600" }
+    { title: "Total Athletes", value: stats.totalAthletes, icon: "🏆", color: "from-blue-600 to-blue-700", trend: "+5% this month" },
+    { title: "Active Tournaments", value: stats.totalTournaments, icon: "🏅", color: "from-purple-600 to-purple-700", trend: "+2 this week" },
+    { title: "Current Participants", value: stats.activeParticipations, icon: "🎯", color: "from-green-600 to-green-700", trend: "+3 this week" }, 
+    { title: "Tournaments Won", value: stats.tournamentsWon, icon: "🥇", color: "from-amber-500 to-amber-600", trend: "+1 this month" }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <InstitutionNavbar />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-indigo-700 to-purple-700 rounded-lg shadow-xl p-6 mb-8 text-white">
-          <h2 className="text-3xl font-bold">Welcome to Institution Hub</h2>
-          <p className="mt-2 text-indigo-100">Manage your athletes, tournaments, and track participation all in one place.</p>
-        </div>
-        
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {statCards.map((card, index) => (
-            <div key={index} className={`bg-gradient-to-r ${card.color} rounded-lg shadow-lg p-6 text-white`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-medium text-white opacity-80">{card.title}</p>
-                  <p className="text-3xl font-bold mt-1">{loading ? "..." : card.value}</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
+        <SidebarNavbar />
+        <div className="flex-1 ml-64 p-8">
+          {/* Welcome Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Welcome to Institution Hub</h1>
+            <p className="text-gray-600 mt-1">Dashboard overview and key metrics</p>
+          </div>
+          
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {statCards.map((card, index) => (
+              <div 
+                key={index} 
+                className={`bg-gradient-to-r ${card.color} rounded-xl shadow-lg p-6 text-white transform transition hover:scale-105`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-white opacity-90">{card.title}</p>
+                    <p className="text-3xl font-bold mt-1">{loading ? "..." : card.value}</p>
+                    <p className="text-xs mt-2 opacity-80">{card.trend}</p>
+                  </div>
+                  <div className="text-4xl bg-white bg-opacity-20 p-3 rounded-full">{card.icon}</div>
                 </div>
-                <div className="text-4xl">{card.icon}</div>
               </div>
+            ))}
+          </div>
+          
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Performance Chart */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Athlete Performance</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="participants" stroke="#4f46e5" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="medals" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          ))}
-        </div>
-        
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Links */}
-          <div className="col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                {quickLinks.map((link, index) => (
-                  <a 
-                    key={index} 
-                    href={link.href} 
-                    className={`flex items-center p-3 rounded-lg ${link.color} text-white hover:opacity-90 transition duration-200`}
-                  >
-                    <span className="text-xl mr-3">{link.icon}</span>
-                    <span>{link.title}</span>
-                  </a>
-                ))}
-              </div>
+            
+            {/* Sport Distribution */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Sport Distribution</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={sportDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="athletes" fill="#8884d8" radius={[5, 5, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
           
-          {/* Recent Athletes */}
-          <div className="col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Athletes</h3>
+          {/* Recent Athletes and Upcoming Events */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Athletes */}
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-800">Recent Athletes</h3>
+                <Link to="/institution/athletes" className="text-indigo-600 hover:text-indigo-800 text-sm">View All</Link>
+              </div>
               
               {loading ? (
                 <div className="flex justify-center">
@@ -117,32 +165,63 @@ const InstitutionDashboard = () => {
               ) : recentAthletes.length === 0 ? (
                 <p className="text-gray-500">No athletes registered yet.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {recentAthletes.map((athlete) => (
-                    <div key={athlete._id} className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200">
+                    <div key={athlete._id} className="flex items-center bg-gray-50 rounded-lg p-4 transition hover:bg-gray-100">
                       <img
                         src={athlete.image ? `http://localhost:8000${athlete.image}` : "/default-profile.png"}
                         alt={athlete.name}
-                        className="w-12 h-12 object-cover rounded-full mr-4 border-2 border-indigo-500"
+                        className="w-14 h-14 object-cover rounded-full border-2 border-indigo-600 p-1"
                       />
-                      <div className="flex-grow">
-                        <h4 className="font-semibold text-gray-800">{athlete.name}</h4>
+                      <div className="ml-4 flex-grow">
+                        <div className="flex justify-between">
+                          <h4 className="font-semibold text-gray-800">{athlete.name}</h4>
+                          <span className="bg-indigo-100 text-indigo-800 text-xs py-1 px-2 rounded-full">{athlete.sport || "General"}</span>
+                        </div>
                         <p className="text-sm text-gray-600">{athlete.email}</p>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {athlete.admissionNumber}
+                        <div className="flex justify-between mt-1">
+                          <p className="text-xs text-gray-500">{athlete.admissionNumber}</p>
+                          <p className="text-xs text-gray-500">Joined 2 weeks ago</p>
+                        </div>
                       </div>
                     </div>
                   ))}
-                  
-                  <a 
-                    href="/institution/athletes" 
-                    className="block text-center text-indigo-600 hover:underline mt-4"
-                  >
-                    View All Athletes →
-                  </a>
                 </div>
               )}
+            </div>
+            
+            {/* Upcoming Events */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Upcoming Events</h3>
+              <div className="space-y-4">
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                  <div className="flex justify-between">
+                    <h4 className="font-semibold text-gray-800">Regional Basketball Tournament</h4>
+                    <span className="text-xs text-gray-500">3 days</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">State Sports Complex, 10 participants</p>
+                </div>
+                
+                <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                  <div className="flex justify-between">
+                    <h4 className="font-semibold text-gray-800">National Swimming Championship</h4>
+                    <span className="text-xs text-gray-500">1 week</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">Olympic Pool Center, 5 participants</p>
+                </div>
+                
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                  <div className="flex justify-between">
+                    <h4 className="font-semibold text-gray-800">Track & Field Invitational</h4>
+                    <span className="text-xs text-gray-500">2 weeks</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">University Stadium, 8 participants</p>
+                </div>
+                
+                <Link to="/institution/monitor-participation" className="block text-center text-indigo-600 hover:text-indigo-800 text-sm mt-4">
+                  View All Events →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

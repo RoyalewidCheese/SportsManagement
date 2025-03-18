@@ -429,9 +429,6 @@ const SponsorViewAthletes = () => {
                   <p className="text-gray-600">{selectedAthlete.sport}</p>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                    Sponsor Athlete
-                  </button>
                 </div>
               </div>
               

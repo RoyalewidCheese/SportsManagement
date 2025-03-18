@@ -52,7 +52,7 @@ const CouncilNavbar = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 opacity-80"></div>
           <div className="absolute top-0 left-0 w-full h-full bg-opacity-30 bg-black flex flex-col items-center justify-center p-6">
             <div className="text-5xl font-bold mb-2">🏆</div>
-            <h1 className="text-2xl font-bold tracking-wider text-white">Council Login</h1>
+            <h1 className="text-2xl font-bold tracking-wider text-white">Council Portal</h1>
             <div className="w-16 h-1 bg-white mt-3 rounded-full"></div>
           </div>
         </div>

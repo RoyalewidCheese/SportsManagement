@@ -60,38 +60,6 @@ const SponsorRequests = () => {
 
   // Sample data for demonstration (in case API doesn't return any)
   const sampleRequests = [
-    {
-      _id: "1",
-      athlete: { name: "Emma Smith", sport: "Gymnastics", profileImage: "https://placekitten.com/50/50" },
-      amountRequested: 950,
-      requestDate: "2025-03-17",
-      purpose: "Training equipment and competition fees",
-      status: "Pending"
-    },
-    {
-      _id: "2",
-      athlete: { name: "Jason Lee", sport: "Soccer", profileImage: "https://placekitten.com/51/51" },
-      amountRequested: 1100,
-      requestDate: "2025-03-18",
-      purpose: "International tournament travel expenses",
-      status: "Pending"
-    },
-    {
-      _id: "3",
-      athlete: { name: "Maria Gonzalez", sport: "Track & Field", profileImage: "https://placekitten.com/52/52" },
-      amountRequested: 850,
-      requestDate: "2025-03-15",
-      purpose: "Performance gear and coaching fees",
-      status: "Approved"
-    },
-    {
-      _id: "4",
-      athlete: { name: "Tyrone Jackson", sport: "Basketball", profileImage: "https://placekitten.com/53/53" },
-      amountRequested: 1500,
-      requestDate: "2025-03-14",
-      purpose: "Summer training camp",
-      status: "Rejected"
-    }
   ];
 
   // Use sample data if requests array is empty
@@ -161,7 +129,7 @@ const SponsorRequests = () => {
                 onClick={fetchRequests}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
               >
-                <span className="mr-2">🔄</span> Refresh
+                Refresh
               </button>
             </div>
           </div>

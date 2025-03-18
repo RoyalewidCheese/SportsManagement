@@ -7,12 +7,12 @@ import {
   Building, 
   Trophy, 
   LogOut,
-  Menu,
+  ChevronLeft,
   ChevronRight
 } from "lucide-react";
 
 const AdminNavbar = ({ setActiveSection, activeSection }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   const navItems = [
     { id: "athletes", icon: <Users size={20} />, label: "Athletes" },
@@ -23,47 +23,57 @@ const AdminNavbar = ({ setActiveSection, activeSection }) => {
   ];
 
   return (
-    <div className={`relative min-h-screen bg-gray-900 text-white transition-all duration-300 ${collapsed ? "w-20" : "w-64"}`}>
-      <div className="flex justify-between items-center p-4 border-b border-gray-700">
-        <div className={`flex items-center ${collapsed ? "justify-center w-full" : ""}`}>
-          {!collapsed && <span className="text-xl font-bold">Admin Login</span>}
-          {collapsed && <Trophy size={24} />}
+    <nav className={`bg-white text-gray-700 h-screen fixed top-0 left-0 z-10 transition-all duration-300 ${isCollapsed ? "w-20" : "w-64"} border-r border-gray-100 shadow-sm`}>
+      <div className="flex flex-col h-full">
+        {/* Logo and Collapse Button */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          {!isCollapsed && (
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center text-white">
+                A
+              </div>
+              <span className="ml-3 text-lg font-light">Admin Portal</span>
+            </div>
+          )}
+          {isCollapsed && (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center text-white mx-auto">
+              A
+            </div>
+          )}
         </div>
-        <button 
-          onClick={() => setCollapsed(!collapsed)} 
-          className="p-1 rounded-full hover:bg-gray-700"
-        >
-          {collapsed ? <ChevronRight size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-      
-      <div className="py-4">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveSection(item.id)}
-            className={`flex items-center w-full py-3 px-4 hover:bg-gray-800 transition-colors ${
-              activeSection === item.id ? "bg-blue-600 text-white" : "text-gray-300"
-            }`}
+        
+        {/* Navigation Links */}
+        <div className="flex flex-col py-6 space-y-1 overflow-y-auto flex-grow px-3">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={`px-4 py-3 rounded-lg flex items-center transition-all ${
+                activeSection === item.id 
+                  ? "bg-gradient-to-r from-purple-50 to-blue-50 text-blue-600 border-l-4 border-blue-400" 
+                  : "hover:bg-gray-50"
+              } ${isCollapsed ? "justify-center" : ""}`}
+            >
+              <span className={`${activeSection === item.id ? "text-blue-500" : "text-gray-500"}`}>
+                {item.icon}
+              </span>
+              {!isCollapsed && <span className="ml-3 font-light">{item.label}</span>}
+            </button>
+          ))}
+        </div>
+        
+        {/* Logout Button */}
+        <div className="mt-auto p-4">
+          <Link 
+            to="/login" 
+            className={`px-4 py-3 rounded-lg flex items-center transition-all text-red-500 hover:bg-red-50 hover:text-red-600 ${isCollapsed ? "justify-center" : ""}`}
           >
-            <span className={`${collapsed ? "mx-auto" : "mr-3"}`}>{item.icon}</span>
-            {!collapsed && <span>{item.label}</span>}
-          </button>
-        ))}
+            <LogOut size={20} />
+            {!isCollapsed && <span className="ml-3 font-light">Log out</span>}
+          </Link>
+        </div>
       </div>
-      
-      <div className="absolute bottom-0 left-0 w-full">
-        <Link 
-          to="/login" 
-          className={`flex items-center py-4 px-4 text-red-400 hover:bg-gray-800 transition-colors ${
-            collapsed ? "justify-center" : ""
-          }`}
-        >
-          <LogOut size={20} className={`${collapsed ? "mx-auto" : "mr-3"}`} />
-          {!collapsed && <span>Logout</span>}
-        </Link>
-      </div>
-    </div>
+    </nav>
   );
 };
 
